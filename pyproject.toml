@@ -1,0 +1,108 @@
+[project]
+name = "alibaba-mcp"
+version = "0.1.0"
+description = "Unofficial MCP server exposing Alibaba.ir-style travel discovery capabilities to AI agents. Portfolio project, not affiliated with Alibaba.ir."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "Omid Moradi" }]
+keywords = [
+    "mcp",
+    "model-context-protocol",
+    "mcp-server",
+    "ai-agents",
+    "agentic-ai",
+    "llm",
+    "langgraph",
+    "langchain",
+    "travel",
+    "alibaba",
+    "iran",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "mcp[cli]>=2.3.0,<3",
+    "pydantic>=2.9,<3",
+    "pydantic-settings>=2.6,<3",
+    "httpx>=0.27,<1",
+]
+
+[project.scripts]
+alibaba-mcp = "alibaba_mcp.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/theomid80/alibaba-mcp"
+Repository = "https://github.com/theomid80/alibaba-mcp"
+Issues = "https://github.com/theomid80/alibaba-mcp/issues"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-timeout>=2.3",
+    "ruff>=0.8",
+    "mypy>=1.13",
+    "pre-commit>=4.0",
+]
+agent = [
+    "langgraph>=1.0,<2",
+    "langchain>=1.0,<2",
+    "langchain-core>=1.0,<2",
+    "langchain-openai>=1.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/alibaba_mcp"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests", "client", "examples", "scripts"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "SIM", # flake8-simplify
+    "C4",  # flake8-comprehensions
+    "RUF", # ruff-specific
+]
+ignore = [
+    "SIM108", # ternary is not always more readable
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B008"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+mypy_path = "src"
+explicit_package_bases = true
+[[tool.mypy.overrides]]
+module = ["tests.*", "client.*", "examples.*", "scripts.*"]
+disallow_untyped_calls = false
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --timeout=120"
+markers = [
+    "live: tests that call the real Alibaba.ir provider (deselected by default; run with -m live)",
+]
