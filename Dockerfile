@@ -30,7 +30,7 @@ FROM python:3.12-slim-bookworm AS runtime
 LABEL org.opencontainers.image.title="Alibaba MCP" \
       org.opencontainers.image.description="Unofficial MCP server for Alibaba.ir-style travel discovery (portfolio project)" \
       org.opencontainers.image.licenses="MIT" \
-      org.opencontainers.image.source="https://github.com/theomid80/alibaba-mcp"
+      org.opencontainers.image.source="https://github.com/omid-moradi/alibaba-mcp"
 
 # tzdata is required for Asia/Tehran timezone lookups.
 RUN apt-get update \

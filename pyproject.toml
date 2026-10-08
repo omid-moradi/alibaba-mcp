@@ -41,9 +41,9 @@ dependencies = [
 alibaba-mcp = "alibaba_mcp.__main__:main"
 
 [project.urls]
-Homepage = "https://github.com/theomid80/alibaba-mcp"
-Repository = "https://github.com/theomid80/alibaba-mcp"
-Issues = "https://github.com/theomid80/alibaba-mcp/issues"
+Homepage = "https://github.com/omid-moradi/alibaba-mcp"
+Repository = "https://github.com/omid-moradi/alibaba-mcp"
+Issues = "https://github.com/omid-moradi/alibaba-mcp/issues"
 
 [dependency-groups]
 dev = [

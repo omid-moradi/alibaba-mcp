@@ -1,7 +1,7 @@
 # Alibaba MCP
 
-[![CI](https://github.com/theomid80/alibaba-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/theomid80/alibaba-mcp/actions/workflows/ci.yml)
-[![Inspector](https://github.com/theomid80/alibaba-mcp/actions/workflows/inspector.yml/badge.svg)](https://github.com/theomid80/alibaba-mcp/actions/workflows/inspector.yml)
+[![CI](https://github.com/omid-moradi/alibaba-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/omid-moradi/alibaba-mcp/actions/workflows/ci.yml)
+[![Inspector](https://github.com/omid-moradi/alibaba-mcp/actions/workflows/inspector.yml/badge.svg)](https://github.com/omid-moradi/alibaba-mcp/actions/workflows/inspector.yml)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -181,7 +181,7 @@ that steer the agent toward effective tool use.
 Requires [uv](https://docs.astral.sh/uv/) (or any Python 3.12+ environment).
 
 ```bash
-git clone https://github.com/theomid80/alibaba-mcp
+git clone https://github.com/omid-moradi/alibaba-mcp
 cd alibaba-mcp
 uv sync --group dev        # pinned, reproducible install (uv.lock committed)
 ```

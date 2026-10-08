@@ -7,7 +7,7 @@ docs and code.
 ## Getting started
 
 ```bash
-git clone https://github.com/theomid80/alibaba-mcp
+git clone https://github.com/omid-moradi/alibaba-mcp
 cd alibaba-mcp
 uv sync --group dev            # creates .venv with pinned dev dependencies
 uv run pytest                  # 59 tests should pass (3 live tests deselected)
