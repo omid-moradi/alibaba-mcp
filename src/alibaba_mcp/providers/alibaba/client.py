@@ -59,28 +59,25 @@ class AlibabaHttpClient:
         timeouts). HTTP 4xx/5xx responses are surfaced as provider errors —
         never retried blindly, never bypassed.
         """
-        last_error: Exception | None = None
         for attempt in range(_RETRY_ATTEMPTS + 1):
             try:
                 async with self._semaphore:
                     response = await self._client.get(path, params=params)
             except httpx.TimeoutException as exc:
-                last_error = TimeoutError(
-                    f"Upstream request to '{path}' timed out. Transport detail: "
-                    f"{exc.__class__.__name__}."
-                )
                 if attempt < _RETRY_ATTEMPTS:
                     await self._sleep_backoff(attempt)
                     continue
-                raise last_error
+                raise TimeoutError(
+                    f"Upstream request to '{path}' timed out after retries. "
+                    f"Transport detail: {exc.__class__.__name__}."
+                ) from exc
             except httpx.HTTPError as exc:
-                last_error = ExternalAPIError(
-                    f"Transport failure talking to upstream '{path}': {exc.__class__.__name__}"
-                )
                 if attempt < _RETRY_ATTEMPTS:
                     await self._sleep_backoff(attempt)
                     continue
-                raise last_error
+                raise ExternalAPIError(
+                    f"Transport failure talking to upstream '{path}': {exc.__class__.__name__}"
+                ) from exc
 
             if response.status_code == 429:
                 raise RateLimitedError(
@@ -99,8 +96,6 @@ class AlibabaHttpClient:
             try:
                 return response.json()
             except ValueError as exc:
-                raise ParsingError(
-                    f"Upstream returned a non-JSON body for '{path}'."
-                ) from exc
+                raise ParsingError(f"Upstream returned a non-JSON body for '{path}'.") from exc
 
         raise ExternalAPIError(f"Request to '{path}' failed after retries.")

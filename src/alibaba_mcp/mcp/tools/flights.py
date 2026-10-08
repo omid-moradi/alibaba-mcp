@@ -23,9 +23,7 @@ def register(mcp: MCPServer, ctx: AppContext) -> None:
             query: Free text matched against code, airport name or city name.
             limit: Maximum number of airports to return (1-20).
         """
-        return await ctx.call(
-            "search_airports", lambda: ctx.service.search_airports(query, limit)
-        )
+        return await ctx.call("search_airports", lambda: ctx.service.search_airports(query, limit))
 
     @mcp.tool(annotations=ToolAnnotations(read_only_hint=True, open_world_hint=False))
     async def search_flights(
@@ -73,5 +71,3 @@ def register(mcp: MCPServer, ctx: AppContext) -> None:
         return await ctx.call(
             "get_flight_details", lambda: ctx.service.get_flight_details(flight_id)
         )
-
-

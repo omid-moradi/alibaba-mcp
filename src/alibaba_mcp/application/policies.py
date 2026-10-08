@@ -154,4 +154,3 @@ def search_policies(query: str, limit: int = 3) -> list[PolicyEntry]:
             scored.append((score, entry))
     scored.sort(key=lambda pair: (-pair[0], pair[1].topic))
     return [entry for _, entry in scored[:limit]]
-

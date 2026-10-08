@@ -69,9 +69,7 @@ def register(mcp: MCPServer, ctx: AppContext) -> None:
         )
 
     @mcp.prompt()
-    def business_trip_planner(
-        origin: str, destination: str, departure_date: str, days: str
-    ) -> str:
+    def business_trip_planner(origin: str, destination: str, departure_date: str, days: str) -> str:
         """Plan a time-efficient business trip (fastest options first)."""
         return (
             f"Plan a {days}-day business trip from {origin} to {destination} leaving "

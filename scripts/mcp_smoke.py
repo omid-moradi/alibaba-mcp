@@ -35,12 +35,17 @@ async def main() -> None:
         assert bad.is_error, "expected error for unknown airport"
         print("error handling OK:", bad.content[0].text[:80], "...")
 
-        res = await client.read_resource("alibaba://travel/provider-status")
+        await client.read_resource("alibaba://travel/provider-status")
         print("provider-status resource OK")
 
-        p = await client.get_prompt("flight_comparison", {
-            "origin": "IKA", "destination": "IST", "departure_date": tomorrow,
-        })
+        p = await client.get_prompt(
+            "flight_comparison",
+            {
+                "origin": "IKA",
+                "destination": "IST",
+                "departure_date": tomorrow,
+            },
+        )
         print("prompt OK:", p.messages[0].content.text[:60], "...")
 
     print("ALL MCP SMOKE CHECKS PASSED")

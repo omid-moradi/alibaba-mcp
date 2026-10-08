@@ -9,7 +9,7 @@ This makes the provider stateless and reproducible.
 
 import hashlib
 import uuid
-from datetime import date, datetime, time, timedelta, timezone
+from datetime import UTC, date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
 from alibaba_mcp.domain.enums import (
@@ -18,7 +18,6 @@ from alibaba_mcp.domain.enums import (
     BusType,
     CabinClass,
     Currency,
-    SeatClass,
     TicketType,
 )
 from alibaba_mcp.domain.models import (
@@ -54,7 +53,7 @@ def _digest(*parts: str) -> int:
 
 def _round_toman(value: float) -> int:
     """Round to a realistic price point (nearest 10,000 Toman)."""
-    return max(10_000, int(round(value / 10_000.0)) * 10_000)
+    return max(10_000, round(value / 10_000.0) * 10_000)
 
 
 def _local_datetime(day: date, hour: int, minute: int) -> datetime:
@@ -94,8 +93,14 @@ class MockProvider:
             mode="mock",
             is_mock=True,
             description=self.description,
-            supported_products=["flights", "hotels", "trains", "buses", "tours",
-                                 "sandbox-bookings"],
+            supported_products=[
+                "flights",
+                "hotels",
+                "trains",
+                "buses",
+                "tours",
+                "sandbox-bookings",
+            ],
         )
 
     # -- validation helpers ----------------------------------------------------
@@ -128,7 +133,8 @@ class MockProvider:
         if city is None or not city.has_train:
             raise InvalidInputError(
                 f"No train service for {code!r}. Known rail cities: "
-                + ", ".join(c.id for c in md.CITIES if c.has_train) + "."
+                + ", ".join(c.id for c in md.CITIES if c.has_train)
+                + "."
             )
         return city
 
@@ -138,7 +144,8 @@ class MockProvider:
         if city is None or not city.has_bus:
             raise InvalidInputError(
                 f"No bus service for {code!r}. Known bus cities: "
-                + ", ".join(c.id for c in md.CITIES if c.has_bus) + "."
+                + ", ".join(c.id for c in md.CITIES if c.has_bus)
+                + "."
             )
         return city
 
@@ -148,7 +155,8 @@ class MockProvider:
         if city not in md.HOTELS:
             raise InvalidInputError(
                 f"No hotel inventory for city {city_id!r}. Cities with hotels: "
-                + ", ".join(sorted(md.HOTELS)) + "."
+                + ", ".join(sorted(md.HOTELS))
+                + "."
             )
         return city
 
@@ -156,7 +164,8 @@ class MockProvider:
     async def search_airports(self, query: str, limit: int = 10) -> list[Airport]:
         needle = query.strip().lower()
         matches = [
-            a for a in md.AIRPORTS
+            a
+            for a in md.AIRPORTS
             if not needle
             or needle in a.code.lower()
             or needle in a.name.lower()
@@ -167,7 +176,8 @@ class MockProvider:
     async def search_cities(self, query: str, limit: int = 10) -> list[City]:
         needle = query.strip().lower()
         matches = [
-            c for c in md.CITIES
+            c
+            for c in md.CITIES
             if not needle
             or needle in c.id.lower()
             or needle in c.name.lower()
@@ -178,10 +188,9 @@ class MockProvider:
     async def search_train_stations(self, query: str, limit: int = 10) -> list[TrainStation]:
         needle = query.strip().lower()
         matches = [
-            s for s in md.TRAIN_STATIONS
-            if not needle
-            or needle in s.code.lower()
-            or needle in s.name.lower()
+            s
+            for s in md.TRAIN_STATIONS
+            if not needle or needle in s.code.lower() or needle in s.name.lower()
         ]
         return matches[: self._cap(limit)]
 
@@ -191,12 +200,13 @@ class MockProvider:
     ) -> Flight:
         d = _digest("flight", origin, destination, departure.isoformat(), str(seq), cabin.value)
         airline_code, airline_name = md.AIRLINES[d % len(md.AIRLINES)]
-        duration = md.FLIGHT_DURATION_MINUTES.get(
-            (origin, destination), 70 + d % 150
-        ) + (d % 11)
+        duration = md.FLIGHT_DURATION_MINUTES.get((origin, destination), 70 + d % 150) + (d % 11)
         base_fare = md.FLIGHT_BASE_FARE_TOMAN.get((origin, destination), 2_000_000)
-        cabin_multiplier = {CabinClass.ECONOMY: 1.0, CabinClass.BUSINESS: 2.5,
-                            CabinClass.FIRST: 4.0}[cabin]
+        cabin_multiplier = {
+            CabinClass.ECONOMY: 1.0,
+            CabinClass.BUSINESS: 2.5,
+            CabinClass.FIRST: 4.0,
+        }[cabin]
         price = _round_toman(base_fare * cabin_multiplier + (d % 40) * 50_000)
         hour = 6 + (d // 4096) % 17
         minute = ((d // 64) % 4) * 15
@@ -240,8 +250,7 @@ class MockProvider:
         if org.code == dst.code:
             raise InvalidInputError("Origin and destination must be different airports.")
         self._ensure_not_past(departure_date)
-        total = 4 + _digest("flight-count", origin, destination,
-                            departure_date.isoformat()) % 5
+        total = self._flight_count(org.code, dst.code, departure_date)
         flights = [
             self._build_flight(org.code, dst.code, departure_date, i, cabin_class)
             for i in range(total)
@@ -273,7 +282,17 @@ class MockProvider:
                 f"'{flight_id}' does not reference a known flight. "
                 "Use an id returned by search_flights."
             ) from exc
+        total = self._flight_count(org.code, dst.code, departure)
+        if seq < 0 or seq >= total:
+            raise NotFoundError(
+                f"'{flight_id}' does not reference a known flight. "
+                "Use an id returned by search_flights."
+            )
         return self._build_flight(org.code, dst.code, departure, seq, cabin)
+
+    @staticmethod
+    def _flight_count(origin: str, destination: str, departure: date) -> int:
+        return 4 + _digest("flight-count", origin, destination, departure.isoformat()) % 5
 
     # -- hotels -----------------------------------------------------------------------
     def _build_hotel(self, city_id: str, index: int) -> Hotel:
@@ -346,14 +365,10 @@ class MockProvider:
         return self._build_hotel(city, index)
 
     # -- trains -------------------------------------------------------------------------
-    def _build_train(
-        self, origin: str, destination: str, departure: date, seq: int
-    ) -> Train:
+    def _build_train(self, origin: str, destination: str, departure: date, seq: int) -> Train:
         d = _digest("train", origin, destination, departure.isoformat(), str(seq))
         operator = md.TRAIN_OPERATORS[d % len(md.TRAIN_OPERATORS)]
-        duration = md.TRAIN_DURATION_MINUTES.get(
-            (origin, destination), 300 + d % 400
-        ) + (d % 7) * 5
+        duration = md.TRAIN_DURATION_MINUTES.get((origin, destination), 300 + d % 400) + (d % 7) * 5
         base_fare = md.TRAIN_BASE_FARE_TOMAN.get((origin, destination), 300_000)
         price = _round_toman(base_fare + (d % 30) * 20_000)
         hour = 7 + (d // 2048) % 12
@@ -385,8 +400,7 @@ class MockProvider:
         if org.id == dst.id:
             raise InvalidInputError("Origin and destination must be different cities.")
         self._ensure_not_past(departure_date)
-        total = 3 + _digest("train-count", org.id, dst.id,
-                            departure_date.isoformat()) % 4
+        total = self._ground_count("train-count", org.id, dst.id, departure_date)
         trains = [self._build_train(org.id, dst.id, departure_date, i) for i in range(total)]
         trains.sort(key=lambda t: t.price.amount)
         return TrainSearchResult(
@@ -414,19 +428,24 @@ class MockProvider:
                 f"'{train_id}' does not reference a known train. "
                 "Use an id returned by search_trains."
             ) from exc
+        total = self._ground_count("train-count", org.id, dst.id, departure)
+        if seq < 0 or seq >= total:
+            raise NotFoundError(
+                f"'{train_id}' does not reference a known train. "
+                "Use an id returned by search_trains."
+            )
         return self._build_train(org.id, dst.id, departure, seq)
 
     # -- buses ----------------------------------------------------------------------------
     def _build_bus(self, origin: str, destination: str, departure: date, seq: int) -> Bus:
         d = _digest("bus", origin, destination, departure.isoformat(), str(seq))
         operator = md.BUS_OPERATORS[d % len(md.BUS_OPERATORS)]
-        duration = md.BUS_DURATION_MINUTES.get(
-            (origin, destination), 300 + d % 400
-        ) + (d % 9) * 10
+        duration = md.BUS_DURATION_MINUTES.get((origin, destination), 300 + d % 400) + (d % 9) * 10
         base_fare = md.BUS_BASE_FARE_TOMAN.get((origin, destination), 250_000)
         bus_type = md.BUS_TYPES[d % len(md.BUS_TYPES)]
-        price = _round_toman(base_fare * (1.4 if bus_type == BusType.VIP else 1.0)
-                             + (d % 20) * 10_000)
+        price = _round_toman(
+            base_fare * (1.4 if bus_type == BusType.VIP else 1.0) + (d % 20) * 10_000
+        )
         hour = 6 + (d // 4096) % 16
         minute = ((d // 32) % 4) * 15
         departure_time = _local_datetime(departure, hour, minute)
@@ -455,8 +474,7 @@ class MockProvider:
         if org.id == dst.id:
             raise InvalidInputError("Origin and destination must be different cities.")
         self._ensure_not_past(departure_date)
-        total = 3 + _digest("bus-count", org.id, dst.id,
-                            departure_date.isoformat()) % 4
+        total = self._ground_count("bus-count", org.id, dst.id, departure_date)
         buses = [self._build_bus(org.id, dst.id, departure_date, i) for i in range(total)]
         buses.sort(key=lambda b: b.price.amount)
         return BusSearchResult(
@@ -481,10 +499,18 @@ class MockProvider:
             seq = int(parts[4])
         except (ValueError, InvalidInputError) as exc:
             raise NotFoundError(
-                f"'{bus_id}' does not reference a known bus. "
-                "Use an id returned by search_buses."
+                f"'{bus_id}' does not reference a known bus. Use an id returned by search_buses."
             ) from exc
+        total = self._ground_count("bus-count", org.id, dst.id, departure)
+        if seq < 0 or seq >= total:
+            raise NotFoundError(
+                f"'{bus_id}' does not reference a known bus. Use an id returned by search_buses."
+            )
         return self._build_bus(org.id, dst.id, departure, seq)
+
+    @staticmethod
+    def _ground_count(kind: str, origin: str, destination: str, departure: date) -> int:
+        return 3 + _digest(kind, origin, destination, departure.isoformat()) % 4
 
     # -- tours ---------------------------------------------------------------------------
     def _build_tour(self, index: int) -> Tour:
@@ -511,7 +537,8 @@ class MockProvider:
         tours = [self._build_tour(i) for i in range(len(md.TOURS))]
         if needle:
             tours = [
-                t for t in tours
+                t
+                for t in tours
                 if needle in t.destination_city_id.lower()
                 or needle in md.CITY_BY_ID[t.destination_city_id].name.lower()
                 or needle in md.CITY_BY_ID[t.destination_city_id].name_fa
@@ -533,13 +560,11 @@ class MockProvider:
             index = int(parts[1])
         except ValueError as exc:
             raise NotFoundError(
-                f"'{tour_id}' does not reference a known tour. "
-                "Use an id returned by search_tours."
+                f"'{tour_id}' does not reference a known tour. Use an id returned by search_tours."
             ) from exc
         if index >= len(md.TOURS):
             raise NotFoundError(
-                f"'{tour_id}' does not reference a known tour. "
-                "Use an id returned by search_tours."
+                f"'{tour_id}' does not reference a known tour. Use an id returned by search_tours."
             )
         return self._build_tour(index)
 
@@ -556,9 +581,7 @@ class MockProvider:
             return (await self.get_bus_details(item_id)).price.amount
         return (await self.get_tour_details(item_id)).price_per_person.amount
 
-    async def create_booking(
-        self, kind: BookingItemKind, item_id: str, passengers: int
-    ) -> Booking:
+    async def create_booking(self, kind: BookingItemKind, item_id: str, passengers: int) -> Booking:
         unit_price = await self._unit_price(kind, item_id)
         booking = Booking(
             id=f"BKG-{uuid.uuid4().hex[:12].upper()}",
@@ -567,7 +590,7 @@ class MockProvider:
             status=BookingStatus.CONFIRMED,
             passengers=passengers,
             total_price=Price(amount=unit_price * passengers, currency=Currency.IRT),
-            created_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
             simulated=True,
         )
         self._bookings[booking.id] = booking
@@ -590,8 +613,3 @@ class MockProvider:
         cancelled = booking.model_copy(update={"status": BookingStatus.CANCELLED})
         self._bookings[cancelled.id] = cancelled
         return cancelled
-
-
-
-
-

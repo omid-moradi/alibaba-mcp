@@ -52,6 +52,4 @@ def register(mcp: MCPServer, ctx: AppContext) -> None:
         Args:
             hotel_id: Hotel id exactly as returned by search_hotels.
         """
-        return await ctx.call(
-            "get_hotel_details", lambda: ctx.service.get_hotel_details(hotel_id)
-        )
+        return await ctx.call("get_hotel_details", lambda: ctx.service.get_hotel_details(hotel_id))

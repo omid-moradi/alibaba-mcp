@@ -9,7 +9,7 @@ import asyncio
 import math
 from datetime import date
 
-from alibaba_mcp.domain.enums import BookingItemKind, Currency, TravelMode
+from alibaba_mcp.domain.enums import BookingItemKind, CabinClass, Currency, TravelMode
 from alibaba_mcp.domain.models import (
     Airport,
     Booking,
@@ -31,7 +31,6 @@ from alibaba_mcp.domain.models import (
     TravelOption,
     TravelOptionComparison,
 )
-from alibaba_mcp.domain.enums import CabinClass
 from alibaba_mcp.providers.base import InvalidInputError, NotFoundError, TravelProvider
 
 # A simulated platform service fee applied on top of inventory prices.
@@ -59,8 +58,13 @@ class TravelService:
         return await self._provider.search_train_stations(query, limit)
 
     async def search_flights(
-        self, origin: str, destination: str, departure_date: date,
-        adults: int, cabin_class: CabinClass, max_results: int,
+        self,
+        origin: str,
+        destination: str,
+        departure_date: date,
+        adults: int,
+        cabin_class: CabinClass,
+        max_results: int,
     ) -> FlightSearchResult:
         return await self._provider.search_flights(
             origin, destination, departure_date, adults, cabin_class, max_results
@@ -70,8 +74,13 @@ class TravelService:
         return await self._provider.get_flight_details(flight_id)
 
     async def search_hotels(
-        self, city_id: str, check_in: date, check_out: date,
-        guests: int, min_stars: int, max_results: int,
+        self,
+        city_id: str,
+        check_in: date,
+        check_out: date,
+        guests: int,
+        min_stars: int,
+        max_results: int,
     ) -> HotelSearchResult:
         return await self._provider.search_hotels(
             city_id, check_in, check_out, guests, min_stars, max_results
@@ -238,48 +247,58 @@ class TravelService:
         if flight_id:
             flight = await self._provider.get_flight_details(flight_id)
             amount = flight.price.amount * passengers
-            components.append(CostComponent(
-                label="Flight",
-                price=Price(amount=amount, currency=Currency.IRT),
-                detail=f"{flight.airline_name} {flight.flight_number} x {passengers} passenger(s)",
-            ))
+            components.append(
+                CostComponent(
+                    label="Flight",
+                    price=Price(amount=amount, currency=Currency.IRT),
+                    detail=f"{flight.airline_name} {flight.flight_number} x {passengers}",
+                )
+            )
             subtotal += amount
         if train_id:
             train = await self._provider.get_train_details(train_id)
             amount = train.price.amount * passengers
-            components.append(CostComponent(
-                label="Train",
-                price=Price(amount=amount, currency=Currency.IRT),
-                detail=f"{train.operator} {train.train_number} x {passengers} passenger(s)",
-            ))
+            components.append(
+                CostComponent(
+                    label="Train",
+                    price=Price(amount=amount, currency=Currency.IRT),
+                    detail=f"{train.operator} {train.train_number} x {passengers} passenger(s)",
+                )
+            )
             subtotal += amount
         if bus_id:
             bus = await self._provider.get_bus_details(bus_id)
             amount = bus.price.amount * passengers
-            components.append(CostComponent(
-                label="Bus",
-                price=Price(amount=amount, currency=Currency.IRT),
-                detail=f"{bus.operator} x {passengers} passenger(s)",
-            ))
+            components.append(
+                CostComponent(
+                    label="Bus",
+                    price=Price(amount=amount, currency=Currency.IRT),
+                    detail=f"{bus.operator} x {passengers} passenger(s)",
+                )
+            )
             subtotal += amount
         if hotel_id:
             if nights < 1:
                 raise InvalidInputError("nights must be at least 1 when a hotel_id is given.")
             hotel = await self._provider.get_hotel_details(hotel_id)
             amount = hotel.price_per_night.amount * nights * rooms
-            components.append(CostComponent(
-                label="Hotel",
-                price=Price(amount=amount, currency=Currency.IRT),
-                detail=f"{hotel.name} ({hotel.room_type}) x {nights} night(s) x {rooms} room(s)",
-            ))
+            components.append(
+                CostComponent(
+                    label="Hotel",
+                    price=Price(amount=amount, currency=Currency.IRT),
+                    detail=f"{hotel.name} ({hotel.room_type}) x {nights}n x {rooms}r",
+                )
+            )
             subtotal += amount
 
         fee = math.ceil(subtotal * _SERVICE_FEE_RATE / 10_000) * 10_000
-        components.append(CostComponent(
-            label="Platform service fee (simulated)",
-            price=Price(amount=fee, currency=Currency.IRT),
-            detail="9% of the subtotal; simulated for this demo server.",
-        ))
+        components.append(
+            CostComponent(
+                label="Platform service fee (simulated)",
+                price=Price(amount=fee, currency=Currency.IRT),
+                detail="9% of the subtotal; simulated for this demo server.",
+            )
+        )
         return CostBreakdown(
             components=components,
             total=Price(amount=subtotal + fee, currency=Currency.IRT),
@@ -305,5 +324,3 @@ class TravelService:
 
 
 __all__ = ["TravelService"]
-
-

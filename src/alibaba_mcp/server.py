@@ -8,8 +8,8 @@ Exposes a module-level ``mcp`` instance so that ``mcp run server.py`` and
 work against the root ``server.py`` shim.
 """
 
-from pydantic import AnyHttpUrl
 from mcp.server import MCPServer
+from pydantic import AnyHttpUrl
 
 from alibaba_mcp.application.services import TravelService
 from alibaba_mcp.config import Settings

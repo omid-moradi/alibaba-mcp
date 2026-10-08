@@ -263,5 +263,3 @@ class ProviderInfo(DomainModel):
     is_mock: bool = Field(description="True when data is simulated.")
     description: str = Field(description="What this provider can and cannot do.")
     supported_products: list[str] = Field(description="Products the provider serves.")
-
-

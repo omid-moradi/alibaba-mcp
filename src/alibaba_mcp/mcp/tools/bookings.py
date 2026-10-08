@@ -58,9 +58,7 @@ def register(mcp: MCPServer, ctx: AppContext) -> None:
         Args:
             booking_id: Booking reference, e.g. 'BKG-...' from create_sandbox_booking.
         """
-        return await ctx.call(
-            "get_booking_status", lambda: ctx.service.get_booking(booking_id)
-        )
+        return await ctx.call("get_booking_status", lambda: ctx.service.get_booking(booking_id))
 
     @mcp.tool(annotations=_BOOKING_ANNOTATIONS)
     async def cancel_sandbox_booking(booking_id: str) -> Booking:

@@ -96,14 +96,13 @@ python_version = "3.12"
 strict = true
 mypy_path = "src"
 explicit_package_bases = true
-[[tool.mypy.overrides]]
-module = ["tests.*", "client.*", "examples.*", "scripts.*"]
-disallow_untyped_calls = false
-disallow_untyped_defs = false
+# Type checking runs against src/ (production code) in strict mode.
+# Tests, client and example scripts are executed by pytest instead.
+
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-ra --timeout=120"
+addopts = "-ra --timeout=120 -m 'not live'"
 markers = [
     "live: tests that call the real Alibaba.ir provider (deselected by default; run with -m live)",
 ]

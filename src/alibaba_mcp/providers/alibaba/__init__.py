@@ -170,9 +170,7 @@ class AlibabaProvider:
         raise self._refuse()
 
     # -- bookings (never supported against a live system without an official API) -----------
-    async def create_booking(
-        self, kind: BookingItemKind, item_id: str, passengers: int
-    ) -> Booking:
+    async def create_booking(self, kind: BookingItemKind, item_id: str, passengers: int) -> Booking:
         raise self._refuse()
 
     async def get_booking(self, booking_id: str) -> Booking:
@@ -180,5 +178,3 @@ class AlibabaProvider:
 
     async def cancel_booking(self, booking_id: str) -> Booking:
         raise self._refuse()
-
-

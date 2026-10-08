@@ -36,6 +36,4 @@ def register(mcp: MCPServer, ctx: AppContext) -> None:
         Args:
             tour_id: Tour id exactly as returned by search_tours.
         """
-        return await ctx.call(
-            "get_tour_details", lambda: ctx.service.get_tour_details(tour_id)
-        )
+        return await ctx.call("get_tour_details", lambda: ctx.service.get_tour_details(tour_id))

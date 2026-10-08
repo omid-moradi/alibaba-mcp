@@ -30,9 +30,7 @@ def register(mcp: MCPServer, ctx: AppContext) -> None:
             query: Free text matched against city code, English or Persian name.
             limit: Maximum number of cities to return (1-20).
         """
-        return await ctx.call(
-            "search_cities", lambda: ctx.service.search_cities(query, limit)
-        )
+        return await ctx.call("search_cities", lambda: ctx.service.search_cities(query, limit))
 
     @mcp.tool(annotations=ToolAnnotations(read_only_hint=True, open_world_hint=False))
     async def search_train_stations(query: str, limit: int = 10) -> list[TrainStation]:
@@ -73,9 +71,7 @@ def register(mcp: MCPServer, ctx: AppContext) -> None:
         """
         return await ctx.call(
             "search_trains",
-            lambda: ctx.service.search_trains(
-                origin, destination, departure_date, max_results
-            ),
+            lambda: ctx.service.search_trains(origin, destination, departure_date, max_results),
         )
 
     @mcp.tool(annotations=ToolAnnotations(read_only_hint=True, open_world_hint=False))
@@ -87,9 +83,7 @@ def register(mcp: MCPServer, ctx: AppContext) -> None:
         Args:
             train_id: Train id exactly as returned by search_trains.
         """
-        return await ctx.call(
-            "get_train_details", lambda: ctx.service.get_train_details(train_id)
-        )
+        return await ctx.call("get_train_details", lambda: ctx.service.get_train_details(train_id))
 
     # -- buses -----------------------------------------------------------------------
     @mcp.tool(annotations=ToolAnnotations(read_only_hint=True, open_world_hint=False))
@@ -113,9 +107,7 @@ def register(mcp: MCPServer, ctx: AppContext) -> None:
         """
         return await ctx.call(
             "search_buses",
-            lambda: ctx.service.search_buses(
-                origin, destination, departure_date, max_results
-            ),
+            lambda: ctx.service.search_buses(origin, destination, departure_date, max_results),
         )
 
     @mcp.tool(annotations=ToolAnnotations(read_only_hint=True, open_world_hint=False))
@@ -127,6 +119,4 @@ def register(mcp: MCPServer, ctx: AppContext) -> None:
         Args:
             bus_id: Bus id exactly as returned by search_buses.
         """
-        return await ctx.call(
-            "get_bus_details", lambda: ctx.service.get_bus_details(bus_id)
-        )
+        return await ctx.call("get_bus_details", lambda: ctx.service.get_bus_details(bus_id))

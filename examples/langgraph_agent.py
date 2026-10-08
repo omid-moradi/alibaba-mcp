@@ -16,7 +16,8 @@ Configuration (choose one):
 plus the matching API key environment variable (OPENAI_API_KEY, etc.).
 
 Usage:
-    uv run python examples/langgraph_agent.py "Find the cheapest flight from Tehran to Mashhad tomorrow"
+    uv run python examples/langgraph_agent.py
+    uv run python examples/langgraph_agent.py "Find the cheapest flight from Tehran to Mashhad"
 """
 
 from __future__ import annotations
@@ -38,7 +39,7 @@ async def main() -> int:
     try:
         from langchain.chat_models import init_chat_model
         from langgraph.prebuilt import create_react_agent
-    except ImportError as exc:  # pragma: no cover - environment guard
+    except ImportError:  # pragma: no cover - environment guard
         print("LangChain/LangGraph not installed. Run: uv sync --group agent")
         return 1
 

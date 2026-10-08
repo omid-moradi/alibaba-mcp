@@ -27,4 +27,4 @@ def get_provider(settings: Settings) -> TravelProvider:
     raise ValueError(f"Unknown provider mode: {settings.provider!r}")
 
 
-__all__ = ["get_provider", "MockProvider", "AlibabaProvider", "TravelProvider"]
+__all__ = ["AlibabaProvider", "MockProvider", "TravelProvider", "get_provider"]

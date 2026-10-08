@@ -91,6 +91,4 @@ def register(mcp: MCPServer, ctx: AppContext) -> None:
         """
         ctx.check_rate_limit("search_travel_policies")
         entries = search_policies(query, limit)
-        return [
-            {"topic": e.topic, "title": e.title, "text": e.text} for e in entries
-        ]
+        return [{"topic": e.topic, "title": e.title, "text": e.text} for e in entries]

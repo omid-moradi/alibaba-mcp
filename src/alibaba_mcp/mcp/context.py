@@ -59,4 +59,3 @@ class AppContext:
         except ProviderError as exc:
             # Upstream/provider-level limitations (e.g. live mode unavailable).
             raise ToolError(str(exc)) from exc
-

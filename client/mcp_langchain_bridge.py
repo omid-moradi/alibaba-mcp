@@ -28,6 +28,9 @@ def _describe_tool_result(result: Any) -> str:
     if structured is not None:
         import json
 
+        # unwrap the {"result": ...} envelope used for list/scalar outputs
+        if isinstance(structured, dict) and set(structured) == {"result"}:
+            structured = structured["result"]
         return json.dumps(structured, ensure_ascii=False, default=str)
     return " ".join(getattr(b, "text", str(b)) for b in result.content)
 
@@ -49,9 +52,7 @@ async def as_langchain_tools(client: Client) -> list[Any]:
             )
         tools.append(
             StructuredTool.from_function(
-                coroutine=lambda _tool_name=tool.name, **kwargs: _call(
-                    client, _tool_name, kwargs
-                ),
+                coroutine=lambda _tool_name=tool.name, **kwargs: _call(client, _tool_name, kwargs),
                 name=tool.name,
                 description=description,
                 args_schema=_json_schema_to_pydantic(tool.name, tool.input_schema),

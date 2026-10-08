@@ -88,11 +88,11 @@ class TravelProvider(Protocol):
     def provider_info(self) -> ProviderInfo: ...
 
     # -- reference data ----------------------------------------------------
-    async def search_airports(self, query: str, limit: int) -> list[Airport]: ...
+    async def search_airports(self, query: str, limit: int = 10) -> list[Airport]: ...
 
-    async def search_cities(self, query: str, limit: int) -> list[City]: ...
+    async def search_cities(self, query: str, limit: int = 10) -> list[City]: ...
 
-    async def search_train_stations(self, query: str, limit: int) -> list[TrainStation]: ...
+    async def search_train_stations(self, query: str, limit: int = 10) -> list[TrainStation]: ...
 
     # -- flights -----------------------------------------------------------
     async def search_flights(
@@ -100,9 +100,9 @@ class TravelProvider(Protocol):
         origin: str,
         destination: str,
         departure_date: date,
-        adults: int,
-        cabin_class: CabinClass,
-        max_results: int,
+        adults: int = 1,
+        cabin_class: CabinClass = CabinClass.ECONOMY,
+        max_results: int = 10,
     ) -> FlightSearchResult: ...
 
     async def get_flight_details(self, flight_id: str) -> Flight: ...
@@ -113,9 +113,9 @@ class TravelProvider(Protocol):
         city_id: str,
         check_in: date,
         check_out: date,
-        guests: int,
-        min_stars: int,
-        max_results: int,
+        guests: int = 1,
+        min_stars: int = 1,
+        max_results: int = 10,
     ) -> HotelSearchResult: ...
 
     async def get_hotel_details(self, hotel_id: str) -> Hotel: ...
@@ -126,7 +126,7 @@ class TravelProvider(Protocol):
         origin: str,
         destination: str,
         departure_date: date,
-        max_results: int,
+        max_results: int = 10,
     ) -> TrainSearchResult: ...
 
     async def get_train_details(self, train_id: str) -> Train: ...
@@ -137,13 +137,15 @@ class TravelProvider(Protocol):
         origin: str,
         destination: str,
         departure_date: date,
-        max_results: int,
+        max_results: int = 10,
     ) -> BusSearchResult: ...
 
     async def get_bus_details(self, bus_id: str) -> Bus: ...
 
     # -- tours -------------------------------------------------------------
-    async def search_tours(self, destination: str | None, max_results: int) -> TourSearchResult: ...
+    async def search_tours(
+        self, destination: str | None = None, max_results: int = 10
+    ) -> TourSearchResult: ...
 
     async def get_tour_details(self, tour_id: str) -> Tour: ...
 
