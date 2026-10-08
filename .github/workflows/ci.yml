@@ -72,8 +72,7 @@ jobs:
       - name: pip-audit
         run: |
           uv pip install pip-audit
-          uv pip export --format requirements-txt > requirements-ci.txt 2>/dev/null || \
-            uv export --format requirements-txt --no-dev -o requirements-ci.txt
+          uv export --format requirements-txt --no-dev --no-emit-project --no-emit-workspace -o requirements-ci.txt
           pip-audit -r requirements-ci.txt --strict
 
   docker:
