@@ -17,16 +17,19 @@ PORT = os.environ.get("ALIBABA_MCP_PORT", "8000")
 PATH = os.environ.get("ALIBABA_MCP_PATH", "/mcp")
 
 url = f"http://{HOST}:{PORT}{PATH}"
-payload = json.dumps({
-    "jsonrpc": "2.0",
-    "id": 1,
-    "method": "initialize",
-    "params": {
-        "protocolVersion": "2026-07-28",
-        "capabilities": {},
-        "clientInfo": {"name": "healthcheck", "version": "0.0.0"},
-    },
-}).encode()
+payload = json.dumps(
+    {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "initialize",
+        "params": {
+            "protocolVersion": "2026-07-28",
+            "capabilities": {},
+            "clientInfo": {"name": "healthcheck", "version": "0.0.0"},
+        },
+    }
+).encode()
+
 
 def _extract_json_rpc(raw: bytes) -> dict[str, object]:
     """Parse a JSON or SSE-encoded JSON-RPC response body."""
@@ -39,7 +42,7 @@ def _extract_json_rpc(raw: bytes) -> dict[str, object]:
             payload = line.removeprefix("data:").strip()
             if payload.startswith("{"):
                 return json.loads(payload)
-    raise ValueError(f"no JSON-RPC payload found in response")
+    raise ValueError("no JSON-RPC payload found in response")
 
 
 request = urllib.request.Request(
@@ -66,6 +69,6 @@ except urllib.error.HTTPError as exc:
         sys.exit(0)
     print(f"unhealthy: HTTP {exc.code}")
     sys.exit(1)
-except Exception as exc:  # noqa: BLE001 - healthcheck must never crash
+except Exception as exc:
     print(f"unhealthy: {exc}")
     sys.exit(1)
