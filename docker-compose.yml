@@ -1,0 +1,15 @@
+services:
+  alibaba-mcp:
+    build: .
+    image: alibaba-mcp:latest
+    ports:
+      - "8000:8000"
+    environment:
+      # See .env.example for every supported variable.
+      ALIBABA_PROVIDER: mock
+      ALIBABA_MCP_LOG_LEVEL: INFO
+      ALIBABA_MCP_RATE_LIMIT_MAX_CALLS: "60"
+      # Set BOTH of the following to enable bearer-token auth:
+      # ALIBABA_MCP_API_TOKEN: change-me
+      # ALIBABA_MCP_AUTH_ISSUER_URL: https://your-issuer.example.com
+    restart: unless-stopped
