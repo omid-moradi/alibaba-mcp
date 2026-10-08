@@ -7,7 +7,8 @@ and lets providers stay pure data adapters.
 
 import asyncio
 import math
-from datetime import date
+from datetime import date, datetime
+from zoneinfo import ZoneInfo
 
 from alibaba_mcp.domain.enums import BookingItemKind, CabinClass, Currency, TravelMode
 from alibaba_mcp.domain.models import (
@@ -125,6 +126,11 @@ class TravelService:
         route) are skipped gracefully — a comparison is still returned for
         the remaining modes.
         """
+        if departure_date < datetime.now(ZoneInfo("Asia/Tehran")).date():
+            raise InvalidInputError(
+                f"Departure date {departure_date.isoformat()} is in the past. "
+                "Use a date from today onwards."
+            )
         flight_opts, train_opts, bus_opts = await asyncio.gather(
             self._safe_flights(origin, destination, departure_date, max_per_mode),
             self._safe_trains(origin, destination, departure_date, max_per_mode),
